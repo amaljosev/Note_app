@@ -40,11 +40,10 @@ class NoteItem extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 )),
                 PopupMenuButton(
-                  color: titleColor, 
+                  color: titleColor,
                   icon: const Icon(
-                    
                     Icons.more_vert,
-                    color: buttonColor, 
+                    color: buttonColor,
                   ),
                   onSelected: (value) {
                     if (value == 'edit') {

@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../core/api.dart';
 import '../../core/colors.dart';
-import 'package:http/http.dart' as http;
+import '../../utiles/snakebars.dart';
 
 TextEditingController titleController = TextEditingController();
 TextEditingController descrpitionController = TextEditingController();
@@ -116,26 +116,21 @@ class _ScreenFormState extends State<ScreenForm> {
       "description": description,
       "is_completed": false
     };
-    const url = 'https://api.nstack.in/v1/todos';
-    final uri = Uri.parse(url);
-    final response = await http.post(
-      uri,
-      body: jsonEncode(body),
-      headers: {'Content-Type': 'application/json'},
-    );
-    if (response.statusCode == 201) {
-      showSuccessMessage('Creation Success');
+    final isSuccess = await Api.addNote(body);
+
+    if (isSuccess) {
+      // ignore: use_build_context_synchronously
+      showSuccessMessage(context, 'Creation Success');
       titleController.text = '';
       descrpitionController.text = '';
     } else {
-      showErrorMessage('Creation Faild');
+      // ignore: use_build_context_synchronously
+      showErrorMessage(context, 'Creation Faild');
     }
   }
 
   Future<void> updateData(id) async {
     if (id == null || id.isEmpty) {
-      showErrorMessage('Invalid ID');
-
       return;
     }
     final title = titleController.text;
@@ -145,42 +140,16 @@ class _ScreenFormState extends State<ScreenForm> {
       "description": description,
       "is_completed": false
     };
+    final isSuccess = await Api.updatNote(id, body);
 
-    final url = 'https://api.nstack.in/v1/todos/$id'; 
-    final uri = Uri.parse(url);
-    final response = await http.put(
-      uri,
-      body: jsonEncode(body),
-     headers: {'Content-Type': 'application/json'}, 
-    );
-
-    if (response.statusCode == 200) {
-      showSuccessMessage('Update Success');
+    if (isSuccess) {
+      // ignore: use_build_context_synchronously
+      showSuccessMessage(context, 'Update Success');
       titleController.text = '';
       descrpitionController.text = '';
     } else {
-      showErrorMessage('Update Faild'); 
+      // ignore: use_build_context_synchronously
+      showErrorMessage(context, 'Update Faild');
     }
-    
-  }
-
-  void showSuccessMessage(
-    String message,
-  ) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.green,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void showErrorMessage(
-    String message,
-  ) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.red,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

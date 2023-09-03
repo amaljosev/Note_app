@@ -1,8 +1,8 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:todo/core/api.dart';
 import 'package:todo/core/colors.dart';
 import 'package:todo/screens/form/widgets/noteitems.dart';
+import 'package:todo/utiles/snakebars.dart';
 import '../form/screen_form.dart.dart';
 
 class ScreenHome extends StatefulWidget {
@@ -37,22 +37,28 @@ class _ScreenHomeState extends State<ScreenHome> {
         visible: isLoading,
         replacement: RefreshIndicator(
           onRefresh: fetchAllData,
-          child: GridView.count(
-            padding: const EdgeInsets.all(8),
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            children: List.generate(items.length, (index) {
-              final item = items[index] as Map;
-              final id = item['_id'];
-              return NoteItem(
-                id: id,
-                items: item,
-                title: item['title'] ?? '',
-                discription: item['description'] ?? '',
-                toDelete: (id) => deleteData(id),
-              );
-            }),
+          child: Visibility(
+            visible: items.isNotEmpty,
+            replacement: const Center(
+              child: Text('Notes Empty', style: TextStyle(color: buttonColor)),
+            ),
+            child: GridView.count(
+              padding: const EdgeInsets.all(8),
+              crossAxisCount: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              children: List.generate(items.length, (index) {
+                final item = items[index] as Map;
+                final id = item['_id'];
+                return NoteItem(
+                  id: id,
+                  items: item,
+                  title: item['title'] ?? '',
+                  discription: item['description'] ?? '',
+                  toDelete: (id) => deleteData(id),
+                );
+              }),
+            ),
           ),
         ),
         child: const Center(
@@ -64,24 +70,21 @@ class _ScreenHomeState extends State<ScreenHome> {
         onPressed: () => navigate(context),
         child: const Icon(
           Icons.add,
-          color: titleColor,
+          color: appbarTitleColor,
         ),
       ),
     );
   }
 
   Future<void> fetchAllData() async {
-    const url = 'https://api.nstack.in/v1/todos?page=1&limit=10';
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body) as Map;
-      final result = json['items'] as List;
+    final response = await Api.fetchNotes();
+    if (response != null) {
       setState(() {
-        items = result;
+        items = response;
       });
     } else {
-      //show error
+      // ignore: use_build_context_synchronously
+      showErrorMessage(context, 'Fetch failed');
     }
     setState(() {
       isLoading = false;
@@ -89,16 +92,15 @@ class _ScreenHomeState extends State<ScreenHome> {
   }
 
   Future<void> deleteData(String id) async {
-    final url = 'https://api.nstack.in/v1/todos/$id';
-    final uri = Uri.parse(url);
-    final response = await http.delete(uri);
-    if (response.statusCode == 200) {
+    final isSuccess = await Api.deleteById(id);
+    if (isSuccess) {
       final filtered = items.where((element) => element['_id'] != id).toList();
       setState(() {
         items = filtered;
       });
     } else {
-      //show error
+      // ignore: use_build_context_synchronously
+      showErrorMessage(context, 'Deletion failed'); 
     }
   }
 
