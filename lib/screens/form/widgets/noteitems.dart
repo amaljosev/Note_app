@@ -41,7 +41,7 @@ class NoteItem extends StatelessWidget {
                 )),
                 PopupMenuButton(
                   color: titleColor, 
-                  icon: Icon(
+                  icon: const Icon(
                     
                     Icons.more_vert,
                     color: buttonColor, 

@@ -14,6 +14,7 @@ class ScreenForm extends StatefulWidget {
     required this.isEdit,
   });
 
+  // ignore: prefer_typing_uninitialized_variables
   final id;
   final Map? note;
   final bool isEdit;
@@ -152,7 +153,6 @@ class _ScreenFormState extends State<ScreenForm> {
       body: jsonEncode(body),
      headers: {'Content-Type': 'application/json'}, 
     );
-    print(response.statusCode); 
 
     if (response.statusCode == 200) {
       showSuccessMessage('Update Success');
